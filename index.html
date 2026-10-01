@@ -1,0 +1,1505 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#17352c">
+<title>故宮へようこそ！日本語ガイドゲーム</title>
+
+<style>
+/* =========================
+   基本設定
+========================= */
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100%;
+  font-family:
+    "Noto Sans JP",
+    "Hiragino Kaku Gothic ProN",
+    "Yu Gothic",
+    Meiryo,
+    sans-serif;
+  background: #10241f;
+  color: #fff;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  overflow-x: hidden;
+}
+
+button {
+  font-family: inherit;
+  border: none;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+#game {
+  width: 100%;
+  max-width: 520px;
+  min-height: 100vh;
+  background: #f7f1df;
+  color: #24352f;
+  position: relative;
+  overflow: hidden;
+}
+
+/* =========================
+   頂部
+========================= */
+.top-bar {
+  height: 58px;
+  background: #17352c;
+  color: #f8d879;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 18px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  box-shadow: 0 3px 12px rgba(0,0,0,.18);
+}
+
+.logo {
+  font-weight: 900;
+  font-size: 17px;
+  letter-spacing: 1px;
+}
+
+.score-box {
+  display: flex;
+  gap: 12px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.score-item {
+  white-space: nowrap;
+}
+
+/* =========================
+   畫面
+========================= */
+.screen {
+  display: none;
+  min-height: calc(100vh - 58px);
+  padding: 22px 18px 30px;
+}
+
+.screen.active {
+  display: block;
+}
+
+/* =========================
+   開始畫面
+========================= */
+.hero {
+  text-align: center;
+  padding-top: 15px;
+}
+
+.hero-title {
+  font-size: 34px;
+  line-height: 1.25;
+  margin: 10px 0;
+  color: #17352c;
+  font-weight: 900;
+}
+
+.hero-subtitle {
+  color: #856f35;
+  font-size: 15px;
+  margin-bottom: 20px;
+}
+
+.palace-art {
+  width: 100%;
+  height: 235px;
+  border-radius: 22px;
+  background:
+    linear-gradient(
+      rgba(20,48,40,.15),
+      rgba(20,48,40,.05)
+    ),
+    #d9c58d;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 22px;
+  box-shadow: 0 10px 30px rgba(35,48,35,.18);
+}
+
+/* 山 */
+.mountain {
+  position: absolute;
+  bottom: 0;
+  width: 0;
+  height: 0;
+  border-left: 150px solid transparent;
+  border-right: 150px solid transparent;
+  border-bottom: 150px solid #80966e;
+}
+
+.m1 {
+  left: -80px;
+}
+
+.m2 {
+  right: -70px;
+  border-bottom-color: #687f61;
+}
+
+/* 故宮建築插圖 */
+.building {
+  position: absolute;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%);
+  width: 240px;
+  height: 92px;
+  background: #c8a64a;
+  border: 5px solid #7b5424;
+  border-radius: 5px;
+  z-index: 4;
+}
+
+.roof {
+  position: absolute;
+  left: 50%;
+  top: -42px;
+  transform: translateX(-50%);
+  width: 285px;
+  height: 55px;
+  background: #315e4b;
+  clip-path: polygon(50% 0, 100% 70%, 93% 100%, 7% 100%, 0 70%);
+  border-bottom: 7px solid #c9a84b;
+}
+
+.roof2 {
+  position: absolute;
+  left: 50%;
+  top: -16px;
+  transform: translateX(-50%);
+  width: 205px;
+  height: 40px;
+  background: #e0bd58;
+  clip-path: polygon(50% 0, 100% 70%, 94% 100%, 6% 100%, 0 70%);
+}
+
+.column {
+  position: absolute;
+  bottom: 0;
+  width: 16px;
+  height: 60px;
+  background: #9e4e32;
+  border: 2px solid #713521;
+}
+
+.c1 { left: 25px; }
+.c2 { left: 72px; }
+.c3 { right: 72px; }
+.c4 { right: 25px; }
+
+.door {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 58px;
+  background: #713521;
+  border: 3px solid #4d2519;
+  border-radius: 20px 20px 0 0;
+}
+
+.sun {
+  position: absolute;
+  top: 20px;
+  right: 28px;
+  width: 48px;
+  height: 48px;
+  background: #e6bb55;
+  border-radius: 50%;
+  box-shadow: 0 0 25px rgba(255,213,105,.6);
+}
+
+/* =========================
+   按鈕
+========================= */
+.main-btn {
+  width: 100%;
+  min-height: 58px;
+  background: #b12828;
+  color: white;
+  border-radius: 15px;
+  font-size: 19px;
+  font-weight: 900;
+  margin: 8px 0;
+  box-shadow: 0 5px 0 #751b1b;
+  transition: .12s;
+}
+
+.main-btn:active {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 #751b1b;
+}
+
+.secondary-btn {
+  background: #17352c;
+  box-shadow: 0 5px 0 #0b1e18;
+}
+
+.gold-btn {
+  background: #c39125;
+  box-shadow: 0 5px 0 #806117;
+}
+
+/* =========================
+   遊戲畫面
+========================= */
+.progress-wrap {
+  background: #d9d1bd;
+  height: 12px;
+  border-radius: 20px;
+  overflow: hidden;
+  margin-bottom: 18px;
+}
+
+.progress {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #a42a2a, #e2ad3c);
+  transition: width .4s;
+}
+
+.guide-card {
+  background: #fffdf7;
+  border-radius: 20px;
+  padding: 18px;
+  box-shadow: 0 5px 20px rgba(55,45,25,.12);
+  margin-bottom: 18px;
+}
+
+.stage-label {
+  color: #a42a2a;
+  font-size: 13px;
+  font-weight: bold;
+  margin-bottom: 7px;
+}
+
+.question {
+  font-size: 23px;
+  line-height: 1.55;
+  font-weight: 900;
+  color: #17352c;
+  margin: 0;
+}
+
+.guide-text {
+  line-height: 1.8;
+  font-size: 16px;
+  margin-top: 12px;
+}
+
+/* =========================
+   選項
+========================= */
+.answers {
+  display: grid;
+  gap: 12px;
+}
+
+.answer-btn {
+  width: 100%;
+  min-height: 62px;
+  background: white;
+  color: #263b34;
+  border: 3px solid #d8cdae;
+  border-radius: 15px;
+  padding: 10px 14px;
+  font-size: 17px;
+  font-weight: bold;
+  text-align: left;
+  transition: .15s;
+}
+
+.answer-btn:active {
+  transform: scale(.98);
+}
+
+.answer-btn.correct {
+  background: #d8f1df;
+  border-color: #309453;
+  color: #17632f;
+}
+
+.answer-btn.wrong {
+  background: #f9d8d8;
+  border-color: #bd3636;
+  color: #8c2020;
+}
+
+.answer-btn.disabled {
+  pointer-events: none;
+}
+
+/* =========================
+   單字卡
+========================= */
+.word-card {
+  background: #17352c;
+  color: white;
+  border-radius: 18px;
+  padding: 18px;
+  margin-bottom: 15px;
+}
+
+.word-jp {
+  font-size: 28px;
+  font-weight: 900;
+  color: #f4cf70;
+}
+
+.word-reading {
+  font-size: 14px;
+  opacity: .8;
+  margin-top: 3px;
+}
+
+.word-meaning {
+  font-size: 17px;
+  margin-top: 10px;
+}
+
+/* =========================
+   點擊互動
+========================= */
+.interactive-map {
+  height: 230px;
+  background: linear-gradient(#b8d4e2 0 38%, #8da87b 38%);
+  border-radius: 20px;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.map-building {
+  position: absolute;
+  width: 180px;
+  height: 75px;
+  background: #d6b454;
+  border: 4px solid #805b2b;
+  left: 50%;
+  bottom: 45px;
+  transform: translateX(-50%);
+}
+
+.map-roof {
+  position: absolute;
+  width: 215px;
+  height: 42px;
+  background: #28604d;
+  left: 50%;
+  bottom: 115px;
+  transform: translateX(-50%);
+  clip-path: polygon(50% 0,100% 100%,0 100%);
+}
+
+.hotspot {
+  position: absolute;
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  background: #c12d2d;
+  color: white;
+  border: 4px solid white;
+  font-weight: bold;
+  box-shadow: 0 3px 12px rgba(0,0,0,.25);
+  animation: pulse 1.5s infinite;
+}
+
+.hotspot.h1 {
+  left: 12%;
+  bottom: 70px;
+}
+
+.hotspot.h2 {
+  right: 12%;
+  bottom: 90px;
+}
+
+.hotspot.h3 {
+  left: 50%;
+  top: 20px;
+  transform: translateX(-50%);
+}
+
+@keyframes pulse {
+  0%,100% { transform: scale(1); }
+  50% { transform: scale(1.12); }
+}
+
+.hotspot.h3 {
+  animation: pulseTop 1.5s infinite;
+}
+
+@keyframes pulseTop {
+  0%,100% { transform: translateX(-50%) scale(1); }
+  50% { transform: translateX(-50%) scale(1.12); }
+}
+
+/* =========================
+   文化小知識
+========================= */
+.info-box {
+  background: #eee5ca;
+  border-left: 6px solid #b12828;
+  padding: 14px;
+  border-radius: 10px;
+  line-height: 1.7;
+  margin-top: 15px;
+}
+
+/* =========================
+   回饋
+========================= */
+.feedback {
+  min-height: 50px;
+  padding: 12px 4px;
+  font-weight: bold;
+  text-align: center;
+  font-size: 16px;
+}
+
+.feedback.good {
+  color: #16803a;
+}
+
+.feedback.bad {
+  color: #b02020;
+}
+
+/* =========================
+   結束畫面
+========================= */
+.result-card {
+  text-align: center;
+  background: #fffdf7;
+  border-radius: 24px;
+  padding: 28px 20px;
+  box-shadow: 0 8px 30px rgba(55,45,25,.15);
+}
+
+.result-icon {
+  font-size: 68px;
+  animation: bounce 1s infinite alternate;
+}
+
+@keyframes bounce {
+  from { transform: translateY(0); }
+  to { transform: translateY(-9px); }
+}
+
+.final-score {
+  font-size: 52px;
+  color: #b12828;
+  font-weight: 900;
+  margin: 5px 0;
+}
+
+.rank {
+  font-size: 20px;
+  font-weight: bold;
+  color: #806117;
+}
+
+.result-message {
+  line-height: 1.8;
+  margin: 15px 0 20px;
+}
+
+/* =========================
+   飛行得分動畫
+========================= */
+.score-pop {
+  position: fixed;
+  color: #c58d17;
+  font-size: 27px;
+  font-weight: 900;
+  pointer-events: none;
+  z-index: 100;
+  animation: scoreFly .9s forwards;
+}
+
+@keyframes scoreFly {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-90px) scale(1.4);
+  }
+}
+
+/* =========================
+   小裝置
+========================= */
+@media (max-width: 360px) {
+  .hero-title {
+    font-size: 29px;
+  }
+
+  .question {
+    font-size: 20px;
+  }
+
+  .answer-btn {
+    font-size: 16px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div id="game">
+
+  <!-- 頂部資訊 -->
+  <div class="top-bar">
+    <div class="logo">🏯 故宮ガイド</div>
+    <div class="score-box">
+      <div class="score-item">⭐ <span id="score">0</span></div>
+      <div class="score-item">❤️ <span id="lives">3</span></div>
+    </div>
+  </div>
+
+  <!-- =========================
+       開始畫面
+  ========================== -->
+  <section id="startScreen" class="screen active">
+
+    <div class="hero">
+
+      <div class="palace-art">
+
+        <div class="sun"></div>
+        <div class="mountain m1"></div>
+        <div class="mountain m2"></div>
+
+        <div class="building">
+          <div class="roof"></div>
+          <div class="roof2"></div>
+
+          <div class="column c1"></div>
+          <div class="column c2"></div>
+          <div class="column c3"></div>
+          <div class="column c4"></div>
+
+          <div class="door"></div>
+        </div>
+
+      </div>
+
+      <h1 class="hero-title">
+        故宮へ<br>ようこそ！
+      </h1>
+
+      <div class="hero-subtitle">
+        日本語でめぐる台湾文化ガイドゲーム
+      </div>
+
+      <div class="guide-card">
+        <p>
+          あなたは今日、故宮博物院の<br>
+          <strong>日本語ガイド</strong>になります！
+        </p>
+
+        <p style="font-size:14px;line-height:1.7;">
+          クイズに答えたり、展示品を探したりしながら、
+          台湾の文化と日本語を楽しく学びましょう。
+        </p>
+      </div>
+
+      <button class="main-btn" onclick="startGame()">
+        ▶ ゲームを始める
+      </button>
+
+      <button class="main-btn secondary-btn" onclick="showHowTo()">
+        📖 遊び方を見る
+      </button>
+
+    </div>
+  </section>
+
+
+  <!-- =========================
+       遊び方
+  ========================== -->
+  <section id="howScreen" class="screen">
+
+    <div class="guide-card">
+
+      <h2>🎮 遊び方</h2>
+
+      <p>
+        このゲームでは、故宮博物院をめぐりながら
+        日本語の問題に挑戦します。
+      </p>
+
+      <div class="info-box">
+        <strong>⭐ 正解すると</strong><br>
+        100ポイントを獲得します。
+      </div>
+
+      <div class="info-box">
+        <strong>❤️ 間違えると</strong><br>
+        ライフが1つ減ります。
+      </div>
+
+      <div class="info-box">
+        <strong>🗣 日本語を学ぼう</strong><br>
+        問題の中に出てくる単語も覚えてみましょう。
+      </div>
+
+      <div class="info-box">
+        <strong>🏆 目標</strong><br>
+        できるだけ高いスコアを目指してください！
+      </div>
+
+      <button class="main-btn" onclick="startGame()">
+        ▶ スタート
+      </button>
+
+      <button class="main-btn secondary-btn" onclick="showScreen('startScreen')">
+        ← 戻る
+      </button>
+
+    </div>
+  </section>
+
+
+  <!-- =========================
+       遊戲畫面
+  ========================== -->
+  <section id="gameScreen" class="screen">
+
+    <div class="progress-wrap">
+      <div id="progress" class="progress"></div>
+    </div>
+
+    <div id="questionArea"></div>
+
+    <div id="feedback" class="feedback"></div>
+
+    <button
+      id="nextBtn"
+      class="main-btn gold-btn"
+      style="display:none;"
+      onclick="nextQuestion()">
+      次へ →
+    </button>
+
+  </section>
+
+
+  <!-- =========================
+       結束畫面
+  ========================== -->
+  <section id="endScreen" class="screen">
+
+    <div class="result-card">
+
+      <div class="result-icon" id="resultIcon">🏆</div>
+
+      <h2>ゲーム終了！</h2>
+
+      <div class="final-score">
+        <span id="finalScore">0</span>
+      </div>
+
+      <div>ポイント</div>
+
+      <div class="rank" id="rankText"></div>
+
+      <p class="result-message" id="resultMessage"></p>
+
+      <button class="main-btn" onclick="startGame()">
+        🔄 もう一度遊ぶ
+      </button>
+
+      <button class="main-btn secondary-btn" onclick="showScreen('startScreen')">
+        🏯 最初の画面へ
+      </button>
+
+    </div>
+
+  </section>
+
+</div>
+
+
+<script>
+/* ==================================================
+   故宮へようこそ！
+   日本語導覽互動遊戲
+================================================== */
+
+/* -------------------------
+   遊戲資料
+------------------------- */
+
+const questions = [
+
+  {
+    type: "guide",
+    title: "第1問｜故宮を知ろう",
+    question: "「故宮博物院」はどこにありますか？",
+    choices: [
+      "台北市",
+      "高雄市",
+      "台中市",
+      "花蓮県"
+    ],
+    answer: 0,
+    explanation:
+      "正解！故宮博物院は台湾の台北市・士林区にあります。"
+  },
+
+  {
+    type: "word",
+    title: "第2問｜日本語単語",
+    word: "博物館",
+    reading: "はくぶつかん",
+    meaning: "museum",
+    question: "「博物館」の意味はどれですか？",
+    choices: [
+      "Museum",
+      "Station",
+      "Restaurant",
+      "School"
+    ],
+    answer: 0,
+    explanation:
+      "「博物館（はくぶつかん）」は英語で museum です。"
+  },
+
+  {
+    type: "guide",
+    title: "第3問｜文化ガイド",
+    question: "故宮博物院には、主にどのようなものが展示されていますか？",
+    choices: [
+      "中国の歴史・文化に関する美術品",
+      "自動車",
+      "宇宙船",
+      "スポーツ用品"
+    ],
+    answer: 0,
+    explanation:
+      "そうです！歴史的な美術品や工芸品などを見ることができます。"
+  },
+
+  {
+    type: "word",
+    title: "第4問｜日本語単語",
+    word: "展示品",
+    reading: "てんじひん",
+    meaning: "展示されている品物",
+    question: "「展示品（てんじひん）」とは何ですか？",
+    choices: [
+      "展示されている品物",
+      "旅行のチケット",
+      "食べ物",
+      "ホテルの部屋"
+    ],
+    answer: 0,
+    explanation:
+      "「展示品」は、博物館などで展示されている品物のことです。"
+  },
+
+  {
+    type: "guide",
+    title: "第5問｜ガイドに挑戦",
+    question: "観光客に「これは何ですか？」と聞かれました。自然な答えは？",
+    choices: [
+      "これは有名な文化財です。",
+      "いただきます！",
+      "おやすみなさい！",
+      "いただけません。"
+    ],
+    answer: 0,
+    explanation:
+      "「これは～です」は、展示品を説明するときに便利な表現です。"
+  },
+
+  {
+    type: "word",
+    title: "第6問｜日本語単語",
+    word: "文化財",
+    reading: "ぶんかざい",
+    meaning: "cultural heritage",
+    question: "「文化財」の意味に一番近いものは？",
+    choices: [
+      "文化的・歴史的に価値のあるもの",
+      "新しいコンピューター",
+      "普通の食事",
+      "交通カード"
+    ],
+    answer: 0,
+    explanation:
+      "「文化財」は、歴史・文化の面で大切な価値を持つものです。"
+  },
+
+  {
+    type: "interactive",
+    title: "第7問｜館内を探検！",
+    question: "赤いボタンを押して、館内のスポットを探してください。",
+    explanation:
+      "よくできました！「探す（さがす）」は「find / look for」という意味です。"
+  },
+
+  {
+    type: "101",
+    title: "第8問｜台湾の有名スポット",
+    question: "台北101は、どの都市にありますか？",
+    choices: [
+      "台北市",
+      "台南市",
+      "高雄市",
+      "新竹市"
+    ],
+    answer: 0,
+    explanation:
+      "正解！台北101は台北市の有名なランドマークです。"
+  },
+
+  {
+    type: "word",
+    title: "第9問｜日本語単語",
+    word: "観光",
+    reading: "かんこう",
+    meaning: "sightseeing",
+    question: "「観光する」の意味はどれですか？",
+    choices: [
+      "観光する / sightseeing",
+      "料理する",
+      "勉強を休む",
+      "寝る"
+    ],
+    answer: 0,
+    explanation:
+      "「観光する」は、旅行先で有名な場所などを見て回ることです。"
+  },
+
+  {
+    type: "final",
+    title: "第10問｜最後のチャレンジ",
+    question: "観光客に「故宮博物院はどうでしたか？」と聞かれました。自然な返事は？",
+    choices: [
+      "とても面白かったです！",
+      "駅は右です。",
+      "水をください。",
+      "明日は月曜日です。"
+    ],
+    answer: 0,
+    explanation:
+      "完璧です！「とても面白かったです」は感想を伝える自然な表現です。"
+  }
+
+];
+
+
+/* -------------------------
+   遊戲狀態
+------------------------- */
+
+let currentQuestion = 0;
+let score = 0;
+let lives = 3;
+let answered = false;
+let collectedSpot = false;
+
+
+/* -------------------------
+   音效
+------------------------- */
+
+let audioContext = null;
+
+function initAudio() {
+  if (!audioContext) {
+    try {
+      audioContext =
+        new (window.AudioContext || window.webkitAudioContext)();
+    } catch(e) {}
+  }
+
+  if (audioContext && audioContext.state === "suspended") {
+    audioContext.resume();
+  }
+}
+
+function playTone(frequency, duration, type="sine") {
+
+  if (!audioContext) return;
+
+  try {
+    const oscillator =
+      audioContext.createOscillator();
+
+    const gain =
+      audioContext.createGain();
+
+    oscillator.type = type;
+    oscillator.frequency.value = frequency;
+
+    gain.gain.setValueAtTime(
+      0.08,
+      audioContext.currentTime
+    );
+
+    gain.gain.exponentialRampToValueAtTime(
+      0.001,
+      audioContext.currentTime + duration
+    );
+
+    oscillator.connect(gain);
+    gain.connect(audioContext.destination);
+
+    oscillator.start();
+
+    oscillator.stop(
+      audioContext.currentTime + duration
+    );
+
+  } catch(e) {}
+}
+
+function correctSound() {
+  playTone(660, .12);
+  setTimeout(() => playTone(880, .18), 100);
+}
+
+function wrongSound() {
+  playTone(180, .25, "square");
+}
+
+
+/* -------------------------
+   畫面切換
+------------------------- */
+
+function showScreen(id) {
+
+  document
+    .querySelectorAll(".screen")
+    .forEach(screen => {
+      screen.classList.remove("active");
+    });
+
+  document
+    .getElementById(id)
+    .classList.add("active");
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+}
+
+
+/* -------------------------
+   開始遊戲
+------------------------- */
+
+function startGame() {
+
+  initAudio();
+
+  currentQuestion = 0;
+  score = 0;
+  lives = 3;
+  answered = false;
+  collectedSpot = false;
+
+  updateTopBar();
+
+  showScreen("gameScreen");
+
+  renderQuestion();
+}
+
+
+/* -------------------------
+   頂部資訊
+------------------------- */
+
+function updateTopBar() {
+
+  document.getElementById("score").textContent = score;
+  document.getElementById("lives").textContent = lives;
+}
+
+
+/* -------------------------
+   顯示問題
+------------------------- */
+
+function renderQuestion() {
+
+  answered = false;
+
+  const q = questions[currentQuestion];
+
+  const area =
+    document.getElementById("questionArea");
+
+  const progress =
+    document.getElementById("progress");
+
+  const percentage =
+    (currentQuestion / questions.length) * 100;
+
+  progress.style.width =
+    percentage + "%";
+
+  document.getElementById("feedback").textContent = "";
+
+  document.getElementById("feedback").className =
+    "feedback";
+
+  document.getElementById("nextBtn").style.display =
+    "none";
+
+
+  /* 互動尋找題 */
+  if (q.type === "interactive") {
+
+    area.innerHTML = `
+
+      <div class="guide-card">
+
+        <div class="stage-label">
+          ${q.title}
+        </div>
+
+        <h2 class="question">
+          ${q.question}
+        </h2>
+
+        <p class="guide-text">
+          「スポット」を見つけてタップしてください！
+        </p>
+
+      </div>
+
+      <div class="interactive-map">
+
+        <div class="map-roof"></div>
+        <div class="map-building"></div>
+
+        <button
+          class="hotspot h1"
+          onclick="collectSpot(this, '入口')">
+          入口
+        </button>
+
+        <button
+          class="hotspot h2"
+          onclick="collectSpot(this, '展示')">
+          展示
+        </button>
+
+        <button
+          class="hotspot h3"
+          onclick="collectSpot(this, '文化')">
+          文化
+        </button>
+
+      </div>
+
+      <div class="word-card">
+        <div class="word-jp">探す</div>
+        <div class="word-reading">さがす</div>
+        <div class="word-meaning">
+          「探す」＝ to look for / to search
+        </div>
+      </div>
+
+    `;
+
+    return;
+  }
+
+
+  /* 一般問題 */
+
+  let wordHTML = "";
+
+  if (q.word) {
+
+    wordHTML = `
+
+      <div class="word-card">
+
+        <div class="word-jp">
+          ${q.word}
+        </div>
+
+        <div class="word-reading">
+          ${q.reading}
+        </div>
+
+        <div class="word-meaning">
+          ${q.meaning}
+        </div>
+
+      </div>
+
+    `;
+  }
+
+
+  let choicesHTML = "";
+
+  q.choices.forEach((choice, index) => {
+
+    choicesHTML += `
+
+      <button
+        class="answer-btn"
+        onclick="answerQuestion(${index})">
+
+        ${String.fromCharCode(65 + index)}　
+        ${choice}
+
+      </button>
+
+    `;
+  });
+
+
+  area.innerHTML = `
+
+    <div class="guide-card">
+
+      <div class="stage-label">
+        ${q.title}
+      </div>
+
+      ${wordHTML}
+
+      <h2 class="question">
+        ${q.question}
+      </h2>
+
+    </div>
+
+    <div class="answers">
+      ${choicesHTML}
+    </div>
+
+  `;
+}
+
+
+/* -------------------------
+   選擇答案
+------------------------- */
+
+function answerQuestion(index) {
+
+  if (answered) return;
+
+  answered = true;
+
+  const q = questions[currentQuestion];
+
+  const buttons =
+    document.querySelectorAll(".answer-btn");
+
+  buttons.forEach(btn => {
+    btn.classList.add("disabled");
+  });
+
+
+  if (index === q.answer) {
+
+    buttons[index].classList.add("correct");
+
+    score += 100;
+
+    correctSound();
+
+    showScoreAnimation();
+
+    showFeedback(
+      "⭕ 正解！ " + q.explanation,
+      true
+    );
+
+  } else {
+
+    buttons[index].classList.add("wrong");
+
+    buttons[q.answer].classList.add("correct");
+
+    lives--;
+
+    wrongSound();
+
+    showFeedback(
+      "❌ ちょっと残念！ " +
+      q.explanation +
+      " 正解は「" +
+      q.choices[q.answer] +
+      "」です。",
+      false
+    );
+
+  }
+
+
+  updateTopBar();
+
+  checkGameOver();
+}
+
+
+/* -------------------------
+   互動題
+------------------------- */
+
+function collectSpot(button, name) {
+
+  if (collectedSpot) return;
+
+  collectedSpot = true;
+  answered = true;
+
+  button.style.background = "#258449";
+  button.textContent = "✓";
+
+  score += 100;
+
+  correctSound();
+
+  showScoreAnimation();
+
+  showFeedback(
+    "⭕ 「" + name + "」スポットを見つけました！ " +
+    questions[currentQuestion].explanation,
+    true
+  );
+
+  updateTopBar();
+
+  checkGameOver();
+}
+
+
+/* -------------------------
+   顯示回饋
+------------------------- */
+
+function showFeedback(text, good) {
+
+  const feedback =
+    document.getElementById("feedback");
+
+  feedback.textContent = text;
+
+  feedback.className =
+    "feedback " +
+    (good ? "good" : "bad");
+
+  document.getElementById("nextBtn")
+    .style.display = "block";
+}
+
+
+/* -------------------------
+   下一題
+------------------------- */
+
+function nextQuestion() {
+
+  currentQuestion++;
+
+  collectedSpot = false;
+
+  if (currentQuestion >= questions.length) {
+
+    endGame();
+
+  } else {
+
+    renderQuestion();
+
+  }
+}
+
+
+/* -------------------------
+   檢查生命值
+------------------------- */
+
+function checkGameOver() {
+
+  if (lives <= 0) {
+
+    setTimeout(() => {
+      endGame();
+    }, 1000);
+
+  }
+}
+
+
+/* -------------------------
+   結束遊戲
+------------------------- */
+
+function endGame() {
+
+  document.getElementById("progress").style.width =
+    "100%";
+
+  document.getElementById("finalScore")
+    .textContent = score;
+
+
+  let rank = "";
+  let message = "";
+  let icon = "🏆";
+
+
+  if (score >= 900) {
+
+    rank = "🏯 故宮マスター";
+
+    message =
+      "すばらしいです！台湾文化と日本語の知識がとても豊富ですね。";
+
+    icon = "👑";
+
+  } else if (score >= 700) {
+
+    rank = "🌟 上級ガイド";
+
+    message =
+      "よくできました！もう一度プレイすると、さらに日本語を覚えられます。";
+
+    icon = "🌟";
+
+  } else if (score >= 400) {
+
+    rank = "😊 見習いガイド";
+
+    message =
+      "いいですね！少しずつ単語と表現を覚えていきましょう。";
+
+    icon = "😊";
+
+  } else {
+
+    rank = "🌱 新人ガイド";
+
+    message =
+      "まずは楽しく挑戦することが大切です。もう一度故宮を探検しましょう！";
+
+    icon = "🌱";
+  }
+
+
+  document.getElementById("rankText")
+    .textContent = rank;
+
+  document.getElementById("resultMessage")
+    .textContent = message;
+
+  document.getElementById("resultIcon")
+    .textContent = icon;
+
+  showScreen("endScreen");
+
+  playTone(523, .15);
+  setTimeout(() => playTone(659, .15), 130);
+  setTimeout(() => playTone(784, .25), 260);
+}
+
+
+/* -------------------------
+   得分動畫
+------------------------- */
+
+function showScoreAnimation() {
+
+  const element =
+    document.createElement("div");
+
+  element.className = "score-pop";
+
+  element.textContent = "+100 ⭐";
+
+  element.style.left =
+    (window.innerWidth / 2 - 50) + "px";
+
+  element.style.top = "90px";
+
+  document.body.appendChild(element);
+
+  setTimeout(() => {
+    element.remove();
+  }, 900);
+}
+
+
+/* -------------------------
+   遊戲說明
+------------------------- */
+
+function showHowTo() {
+
+  initAudio();
+
+  showScreen("howScreen");
+}
+
+
+/* -------------------------
+   防止雙擊縮放
+------------------------- */
+
+let lastTouchEnd = 0;
+
+document.addEventListener(
+  "touchend",
+  function(event) {
+
+    const now =
+      new Date().getTime();
+
+    if (now - lastTouchEnd <= 300) {
+      event.preventDefault();
+    }
+
+    lastTouchEnd = now;
+
+  },
+  false
+);
+
+</script>
+
+</body>
+</html>
